@@ -16,4 +16,8 @@ class ClientController extends Controller
     public function create() {
         return __METHOD__;
     }
+
+    public function show($client_id) {
+        return __METHOD__ . ':' . $client_id;
+    }
 }
