@@ -2,10 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Title as Title;
+use Illuminate\Http\Request;
 use stdClass;
 
 class ClientController extends Controller
 {
+    /**
+     * @var array
+     */
+    private $titles;
+
+    public function __construct(Title $titles )
+    {
+        $this->titles = $titles->all();
+    }
     //
     public function index() {
         $data = [];
@@ -31,8 +42,43 @@ class ClientController extends Controller
         return view('client/index', $data);
     }
 
-    public function newClient() {
-        return view('client/newClient');
+    public function newClient( Request $request) {
+        $data = [];
+
+        $data['title'] = $request->input('title');
+        $data['name'] = $request->input('name');
+        $data['last_name'] = $request->input('last_name');
+        $data['address'] = $request->input('address');
+        $data['zip_code'] = $request->input('zip_code');
+        $data['city'] = $request->input('city');
+        $data['state'] = $request->input('state');
+        $data['email'] = $request->input('email');
+
+
+        $data['titles'] = $this->titles;
+        $data['modify'] = 0;
+
+        if( $request->isMethod('post') )
+        {
+            //dd($data);
+            $this->validate(
+                $request,
+                [
+                    'name' => 'required|min:5',
+                    'last_name' => 'required',
+                    'address' => 'required',
+                    'zip_code' => 'required',
+                    'city' => 'required',
+                    'state' => 'required',
+                    'email' => 'required',
+
+                ]
+            );
+
+            return redirect('clients');
+        }
+
+        return view('client/form', $data);
     }
 
     public function create() {
@@ -40,6 +86,9 @@ class ClientController extends Controller
     }
 
     public function show($client_id) {
-        return view('client/show');
+        $data = [];
+        $data['titles'] = $this->titles;
+        $data['modify'] = 1;
+        return view('client/form', $data);
     }
 }
