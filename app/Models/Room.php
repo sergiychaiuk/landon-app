@@ -25,4 +25,16 @@ class Room extends Model
                                     ->orderBy('r.id')
                                     ->get();
     }
+
+    public function isRoomBooked($room_id, $start_date, $end_date) {
+        return DB::table('reservations')
+            ->whereRaw("
+                            NOT(
+                                date_out < '{$start_date}' OR
+                                date_in > '{$end_date}'
+                                )
+                        ")
+            ->where('room_id', $room_id)
+            ->count();
+    }
 }
