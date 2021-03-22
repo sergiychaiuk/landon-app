@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Client as Client;
 use App\Models\Title as Title;
 use Illuminate\Http\Request;
-use stdClass;
 
 class ClientController extends Controller
 {
@@ -12,37 +12,26 @@ class ClientController extends Controller
      * @var array
      */
     private $titles;
+    /**
+     * @var Client
+     */
+    private $client;
 
-    public function __construct(Title $titles )
+    public function __construct(Title $titles, Client $client )
     {
         $this->titles = $titles->all();
+        $this->client = $client;
     }
     //
     public function index() {
         $data = [];
 
-        $obj = new stdClass;
-        $obj->id = 1;
-        $obj->title = 'mr';
-        $obj->name = 'john';
-        $obj->last_name = 'doe';
-        $obj->email = 'john@domain.com';
-
-        $data['clients'][] = $obj;
-
-        $obj = new stdClass;
-        $obj->id = 2;
-        $obj->title = 'ms';
-        $obj->name = 'jane';
-        $obj->last_name = 'doe';
-        $obj->email = 'jane@another-domain.com';
-
-        $data['clients'][] = $obj;
+        $data['clients'] = Client::all();
 
         return view('client/index', $data);
     }
 
-    public function newClient( Request $request) {
+    public function newClient( Request $request, Client $client) {
         $data = [];
 
         $data['title'] = $request->input('title');
@@ -54,9 +43,6 @@ class ClientController extends Controller
         $data['state'] = $request->input('state');
         $data['email'] = $request->input('email');
 
-
-        $data['titles'] = $this->titles;
-        $data['modify'] = 0;
 
         if( $request->isMethod('post') )
         {
@@ -75,8 +61,13 @@ class ClientController extends Controller
                 ]
             );
 
+            $client->insert($data);
+
             return redirect('clients');
         }
+
+        $data['titles'] = $this->titles;
+        $data['modify'] = 0;
 
         return view('client/form', $data);
     }
@@ -89,6 +80,7 @@ class ClientController extends Controller
         $data = [];
         $data['titles'] = $this->titles;
         $data['modify'] = 1;
+        $data['client_data'] = Client::where('id', $client_id)->get()->first();
         return view('client/form', $data);
     }
 }
